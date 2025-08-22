@@ -149,6 +149,28 @@
     <audio id="hitSound" src="sounds/hit.mp3"></audio>
     <audio id="coinSound" src=""></audio>
     <audio id="explosionSound" src=""></audio>
+
+    <div id="ranksModal" class="modal">
+    <div class="modal-content">
+        <h2>🏆 Система Рангов</h2>
+        <div id="ranksList" class="ranks-list">
+            <!-- Ранги будут добавляться через JavaScript -->
+        </div>
+        <div class="current-rank-info">
+            <h3>Ваш текущий прогресс:</h3>
+            <div id="currentRankInfo">
+                <span id="currentRankName">Iron I</span>
+                <progress id="currentRankProgress" value="0" max="100"></progress>
+                <span id="currentRankXP">0/100 XP</span>
+            </div>
+        </div>
+        <button id="closeRanks">Закрыть</button>
+    </div>
+</div>
+<div id="zombieInfo">
+    <div>Скорость: <span id="zombieSpeed">8</span></div>
+    <div>Частота: <span id="zombieSpawnRate">1</span>/сек</div>
+</div>
     
     <script src="script.js"></script>
 </body>
