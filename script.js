@@ -13,7 +13,10 @@ class ZombieGame {
             rankImage: document.getElementById('rankImage'),
             rankName: document.getElementById('rankName'),
             rankProgress: document.getElementById('rankProgress'),
-            rankProgressText: document.getElementById('rankProgressText')
+            rankProgressText: document.getElementById('rankProgressText'),
+            zombieSpeed: document.getElementById('zombieSpeed'),
+            zombieSpawnRate: document.getElementById('zombieSpawnRate')
+            
         };
         
         // Отложим инициализацию остальных элементов до полной загрузки DOM
@@ -64,7 +67,13 @@ class ZombieGame {
             menuSettingsBtn: document.getElementById('menuSettingsBtn'),
             menuRanksBtn: document.getElementById('menuRanksBtn'),
             backToMenuBtn: document.getElementById('backToMenuBtn'),
-            pauseToMenuBtn: document.getElementById('pauseToMenuBtn')
+            pauseToMenuBtn: document.getElementById('pauseToMenuBtn'),
+            ranksModal: document.getElementById('ranksModal'),
+            ranksList: document.getElementById('ranksList'),
+            closeRanks: document.getElementById('closeRanks'),
+            currentRankName: document.getElementById('currentRankName'),
+            currentRankProgress: document.getElementById('currentRankProgress'),
+            currentRankXP: document.getElementById('currentRankXP')
         };
 
         console.log('Elements found:', this.elements);
@@ -110,6 +119,8 @@ class ZombieGame {
                 createZombie: null,
                 zombieMove: []
             },
+            zombieSpawnRate: 500, // начальная скорость появления зомби (мс)
+            minSpawnRate: 200,    // минимальная скорость появления
             purchasedSkins: JSON.parse(localStorage.getItem('purchasedSkins')) || ["🤪"],
             purchasedColors: JSON.parse(localStorage.getItem('purchasedColors')) || ["#e74c3c"],
             purchasedBackgrounds: JSON.parse(localStorage.getItem('purchasedBackgrounds')) || ["default"],
@@ -289,8 +300,13 @@ class ZombieGame {
                 background.addEventListener('click', () => this.handleBackgroundClick(background));
             });
         }
+        if (this.elements.closeRanks) {
+            this.elements.closeRanks.addEventListener('click', () => this.closeRanks());
     }
-
+        if (this.elements.menuRanksBtn) {
+            this.elements.menuRanksBtn.addEventListener('click', () => this.showRanksModal());
+}
+    }
     // Остальные методы остаются без изменений...
     startFromMenu() {
     this.hideModal(this.elements.mainMenu);
@@ -324,19 +340,44 @@ class ZombieGame {
     this.audio.backgroundMusic.pause();
 }
 
-    showRanks() {
-        const rankInfo = this.ranks.map(rank => 
-            `${rank.image} ${rank.name} - ${rank.xpRequired} XP`
-        ).join('\n');
+    showRanksModal() {
+    this.updateRanksModal();
+    this.showModal(this.elements.ranksModal);
+}
+
+updateRanksModal() {
+    // Очищаем список
+    this.elements.ranksList.innerHTML = '';
+    
+    // Добавляем все ранги
+    this.ranks.forEach((rank, index) => {
+        const rankItem = document.createElement('div');
+        rankItem.className = 'rank-item';
         
-        alert('🏆 СИСТЕМА РАНГОВ 🏆\n\n' + rankInfo + 
-              '\n\n💡 Набирайте XP, играя в игре!');
-    }
+        // Проверяем, является ли этот ранг текущим
+        if (index === this.state.currentRank) {
+            rankItem.classList.add('current');
+        }
+        
+        rankItem.innerHTML = `
+            <img src="${rank.image}" alt="${rank.name}" class="rank-icon">
+            <div class="rank-info">
+                <div class="rank-name">${rank.name}</div>
+                <div class="rank-xp">${rank.xpRequired} XP</div>
+            </div>
+        `;
+        
+        this.elements.ranksList.appendChild(rankItem);
+    });
+    
+    // Обновляем информацию о текущем ранге
+    this.updateCurrentRankInfo();
+}
 
     startGame() {
-        this.resetGameState();
-        this.state.intervals.createZombie = setInterval(() => this.createZombie(), 500);
-    }
+    this.resetGameState();
+    this.state.intervals.createZombie = setInterval(() => this.createZombie(), this.state.zombieSpawnRate);
+}
 
     resetGameState() {
         this.state.lives = 3;
@@ -354,7 +395,7 @@ class ZombieGame {
         this.updateHearts();
         this.hideModal(this.elements.gameOverScreen);
         this.hideModal(this.elements.pauseScreen);
-        
+        this.state.zombieSpawnRate = 500; // сбрасываем скорость появления
         document.querySelectorAll('.zombie').forEach(zombie => zombie.remove());
         this.elements.player.style.visibility = 'visible';
         this.updateRank();
@@ -453,9 +494,11 @@ class ZombieGame {
         if (this.state.score > this.state.highScore) {
             xpEarned += 10;
         }
-        
+         if (this.state.score % 15 === 0) {
+        xpEarned += 5;
+        this.state.zombieSpeed += 1;
         this.state.currentXp += xpEarned;
-        
+        }
         localStorage.setItem('totalScore', this.state.totalScore);
         localStorage.setItem('currentXp', this.state.currentXp);
         
@@ -463,45 +506,65 @@ class ZombieGame {
         this.elements.shopScore.textContent = this.state.totalScore;
         this.animateScore(this.elements.scoreDisplay);
         
+        this.elements.zombieSpeed.textContent = this.state.zombieSpeed;
+        this.elements.zombieSpawnRate.textContent = Math.round(1000 / this.state.zombieSpawnRate); 
+        
         if (this.state.score > this.state.highScore) {
             this.state.highScore = this.state.score;
             localStorage.setItem('highScore', this.state.highScore);
             this.elements.highScoreDisplay.textContent = `Рекорд: ${this.state.highScore}`;
             this.animateScore(this.elements.highScoreDisplay);
         }
+         if (this.state.score % 10 === 0 && this.state.zombieSpawnRate > this.state.minSpawnRate) {
+        xpEarned += 3;
+        this.state.zombieSpawnRate -= 50; // уменьшаем интервал = больше зомби
+        
+        // Перезапускаем интервал создания зомби с новой скоростью
+        clearInterval(this.state.intervals.createZombie);
+        this.state.intervals.createZombie = setInterval(() => this.createZombie(), this.state.zombieSpawnRate);
+    }
+    
+    if (this.state.score > this.state.highScore) {
+        xpEarned += 10;
+    }
         
         this.updateRank();
         this.playSound(this.audio.coinSound);
     }
 
     updateRank() {
-        let rankIncreased = false;
-        
-        while (this.state.currentRank < this.ranks.length - 1 && 
-               this.state.currentXp >= this.ranks[this.state.currentRank + 1].xpRequired) {
-            this.state.currentRank++;
-            rankIncreased = true;
-            localStorage.setItem('currentRank', this.state.currentRank);
-        }
-        
-        const currentRank = this.ranks[this.state.currentRank];
-        const nextRank = this.state.currentRank < this.ranks.length - 1 ? 
-            this.ranks[this.state.currentRank + 1] : currentRank;
-        
-        const xpForNextRank = nextRank.xpRequired - currentRank.xpRequired;
-        const xpInCurrentRank = this.state.currentXp - currentRank.xpRequired;
-        const progress = (xpInCurrentRank / xpForNextRank) * 100;
-        
-        this.elements.rankImage.innerHTML = `<img src="${currentRank.image}" alt="${currentRank.name}" class="rank-icon">`;
-        this.elements.rankName.textContent = currentRank.name;
-        this.elements.rankProgress.value = progress;
-        this.elements.rankProgressText.textContent = 
-            `${xpInCurrentRank}/${xpForNextRank} XP`;
-        
-        if (rankIncreased) {
-            this.showRankUpNotification(currentRank);
-        }
+    let rankIncreased = false;
+    
+    while (this.state.currentRank < this.ranks.length - 1 && 
+           this.state.currentXp >= this.ranks[this.state.currentRank + 1].xpRequired) {
+        this.state.currentRank++;
+        rankIncreased = true;
+        localStorage.setItem('currentRank', this.state.currentRank);
     }
+    
+    const currentRank = this.ranks[this.state.currentRank];
+    const nextRank = this.state.currentRank < this.ranks.length - 1 ? 
+        this.ranks[this.state.currentRank + 1] : currentRank;
+    
+    const xpForNextRank = nextRank.xpRequired - currentRank.xpRequired;
+    const xpInCurrentRank = this.state.currentXp - currentRank.xpRequired;
+    const progress = (xpInCurrentRank / xpForNextRank) * 100;
+    
+    this.elements.rankImage.innerHTML = `<img src="${currentRank.image}" alt="${currentRank.name}" class="rank-icon">`;
+    this.elements.rankName.textContent = currentRank.name;
+    this.elements.rankProgress.value = progress;
+    this.elements.rankProgressText.textContent = 
+        `${xpInCurrentRank}/${xpForNextRank} XP`;
+    
+    // Обновляем модальное окно рангов если оно открыто
+    if (this.elements.ranksModal.classList.contains('show')) {
+        this.updateRanksModal();
+    }
+    
+    if (rankIncreased) {
+        this.showRankUpNotification(currentRank);
+    }
+}
 
     showRankUpNotification(rank) {
         this.playSound(this.audio.rankUpSound);
@@ -850,6 +913,23 @@ class ZombieGame {
         this.elements.musicVolumeValue.textContent = `${Math.round(this.state.currentMusicVolume * 100)}%`;
         this.elements.soundVolumeValue.textContent = `${Math.round(this.state.currentSoundVolume * 100)}%`;
     }
+    updateCurrentRankInfo() {
+    const currentRank = this.ranks[this.state.currentRank];
+    const nextRank = this.state.currentRank < this.ranks.length - 1 ? 
+        this.ranks[this.state.currentRank + 1] : currentRank;
+    
+    const xpForNextRank = nextRank.xpRequired - currentRank.xpRequired;
+    const xpInCurrentRank = this.state.currentXp - currentRank.xpRequired;
+    const progress = (xpInCurrentRank / xpForNextRank) * 100;
+    
+    this.elements.currentRankName.textContent = currentRank.name;
+    this.elements.currentRankProgress.value = progress;
+    this.elements.currentRankXP.textContent = 
+        `${xpInCurrentRank}/${xpForNextRank} XP (Всего: ${this.state.currentXp} XP)`;
+}
+closeRanks() {
+    this.hideModal(this.elements.ranksModal);
+}
 
     tryPlayMusic() {
         if (this.state.currentMusicVolume > 0) {
