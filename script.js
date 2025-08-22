@@ -704,7 +704,6 @@ updateRanksModal() {
 
     openShop() {
         this.updateShop();
-        this.hideModal(this.elements.mainMenu);
         this.elements.shop.style.zIndex = "1002";
         this.showModal(this.elements.shop);
     }
@@ -716,7 +715,6 @@ updateRanksModal() {
         this.showModal(this.elements.gameOverScreen);
     }
 }
-
 
     updateShop() {
         this.elements.shopScore.textContent = this.state.totalScore;
@@ -883,7 +881,6 @@ updateRanksModal() {
     }
     
     openSettings() {
-        this.hideModal(this.elements.mainMenu);
         this.elements.settingsModal.style.zIndex = "1002";
         this.showModal(this.elements.settingsModal);
     }
@@ -894,9 +891,7 @@ updateRanksModal() {
     if (this.state.gameOver && !this.elements.mainMenu.classList.contains('show')) {
         this.showModal(this.elements.gameOverScreen);
     }
-      }  
-
-    
+      }   
 
     updateMusicVolume() {
         this.state.currentMusicVolume = parseFloat(this.elements.musicVolume.value);
@@ -984,4 +979,3 @@ document.addEventListener('DOMContentLoaded', () => {
     game = new ZombieGame();
     window.game = game;
 });
-
