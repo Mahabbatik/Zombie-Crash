@@ -517,7 +517,7 @@ updateRanksModal() {
         }
          if (this.state.score % 10 === 0 && this.state.zombieSpawnRate > this.state.minSpawnRate) {
         xpEarned += 3;
-        this.state.zombieSpawnRate -= 50; // уменьшаем интервал = больше зомби
+        this.state.zombieSpawnRate -= 40; // уменьшаем интервал = больше зомби
         
         // Перезапускаем интервал создания зомби с новой скоростью
         clearInterval(this.state.intervals.createZombie);
