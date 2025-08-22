@@ -293,14 +293,36 @@ class ZombieGame {
 
     // Остальные методы остаются без изменений...
     startFromMenu() {
-        this.hideModal(this.elements.mainMenu);
-        this.startGame();
-    }
+    this.hideModal(this.elements.mainMenu);
+    this.startGame();
+}
 
     showMainMenu() {
         this.updateMenuScores();
         this.showModal(this.elements.mainMenu);
+        this.stopGame(); // Останавливаем игру
+        this.updateMenuScores();
+        this.showModal(this.elements.mainMenu);
     }
+    stopGame() {
+    // Останавливаем все интервалы
+    this.clearAllIntervals();
+    
+    // Удаляем всех зомби
+    this.state.zombies.forEach(zombie => zombie.remove());
+    this.state.zombies = [];
+    
+    // Сбрасываем состояние игры
+    this.state.gameOver = false;
+    this.state.isPaused = false;
+    
+    // Скрываем все модальные окна игры
+    this.hideModal(this.elements.gameOverScreen);
+    this.hideModal(this.elements.pauseScreen);
+    
+    // Останавливаем музыку
+    this.audio.backgroundMusic.pause();
+}
 
     showRanks() {
         const rankInfo = this.ranks.map(rank => 
@@ -674,14 +696,14 @@ class ZombieGame {
     }
 
     handleSkinClick(skinElement) {
-        const skin = skinElement.dataset.skin;
-        if (this.state.purchasedSkins.includes(skin)) {
-            this.equipSkin(skin);
-        } else {
-            this.buySkin(skinElement);
-        }
-        this.updateShop();
+    const skin = skinElement.dataset.skin;
+    if (this.state.purchasedSkins.includes(skin)) {
+        this.equipSkin(skin);
+    } else {
+        this.buySkin(skinElement);
     }
+    this.updateShop();
+}
 
    
         
@@ -762,6 +784,27 @@ class ZombieGame {
             this.playSound(this.audio.coinSound);
         }
     }
+
+   buySkin(skinElement) {
+    const price = parseInt(skinElement.dataset.price);
+    const skin = skinElement.dataset.skin;
+    
+    if (price <= this.state.totalScore) {
+        this.state.totalScore -= price;
+        localStorage.setItem('totalScore', this.state.totalScore);
+        
+        if (!this.state.purchasedSkins.includes(skin)) {
+            this.state.purchasedSkins.push(skin);
+            localStorage.setItem('purchasedSkins', JSON.stringify(this.state.purchasedSkins));
+        }
+        
+        this.equipSkin(skin);
+        this.playSound(this.audio.coinSound);
+        this.updateShop();
+    } else {
+        console.log('Недостаточно очков для покупки скина');
+    }
+}
 
     equipBackground(background) {
         this.state.selectedBackground = background;
