@@ -710,11 +710,13 @@ updateRanksModal() {
     }
 
     closeShop() {
-        this.hideModal(this.elements.shop);
-        if (this.state.gameOver) {
-            this.showModal(this.elements.gameOverScreen);
-        }
+    this.hideModal(this.elements.shop);
+    // Не показываем экран gameOver, если находимся в главном меню
+    if (this.state.gameOver && !this.elements.mainMenu.classList.contains('show')) {
+        this.showModal(this.elements.gameOverScreen);
     }
+}
+
 
     updateShop() {
         this.elements.shopScore.textContent = this.state.totalScore;
@@ -887,11 +889,14 @@ updateRanksModal() {
     }
 
     closeSettings() {
-        this.hideModal(this.elements.settingsModal);
-        if (this.state.gameOver) {
-            this.showModal(this.elements.gameOverScreen);
-        }
+    this.hideModal(this.elements.settingsModal);
+    // Не показываем экран gameOver, если находимся в главном меню
+    if (this.state.gameOver && !this.elements.mainMenu.classList.contains('show')) {
+        this.showModal(this.elements.gameOverScreen);
     }
+      }  
+
+    
 
     updateMusicVolume() {
         this.state.currentMusicVolume = parseFloat(this.elements.musicVolume.value);
@@ -979,3 +984,4 @@ document.addEventListener('DOMContentLoaded', () => {
     game = new ZombieGame();
     window.game = game;
 });
+
