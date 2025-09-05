@@ -241,14 +241,15 @@ body {
 button {
     padding: 12px;
     margin: 10px 5px;
-    background-color: #3498db;
-    color: white;
     border: none;
     border-radius: 5px;
     font-size: 16px;
     cursor: pointer;
     transition: all 0.3s;
     width: 100%;
+    box-shadow: #ffffff ;
+    background: linear-gradient(145deg, #3498db, #2980b9);
+    color: white;
 }
 
 button:hover {
@@ -412,6 +413,7 @@ button:hover {
 
 #shop {
     z-index: 1001; /* Магазин выше других модальных окон */
+    
 }
 
 #settingsModal {
@@ -815,4 +817,164 @@ button:hover {
 
 #zombieInfo div {
     margin: 3px 0;
+}
+
+/* Добавьте в конец style.css */
+.bonus {
+    position: absolute;
+    width: 30px;
+    height: 30px;
+    background-color: #f1c40f;
+    border-radius: 50%;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    font-size: 20px;
+    z-index: 7;
+    animation: bonusFloat 2s infinite ease-in-out;
+    box-shadow: 0 0 10px rgba(241, 196, 15, 0.7);
+}
+
+@keyframes bonusFloat {
+    0%, 100% { transform: translateY(0px) rotate(0deg); }
+    25% { transform: translateY(-5px) rotate(5deg); }
+    50% { transform: translateY(0px) rotate(0deg); }
+    75% { transform: translateY(5px) rotate(-5deg); }
+}
+
+.bonus.star { background-color: #f1c40f; }
+.bonus.diamond { background-color: #3498db; }
+.bonus.shield { background-color: #2ecc71; }
+
+.bonus-notification {
+    position: absolute;
+    background: rgba(0, 0, 0, 0.8);
+    color: white;
+    padding: 5px 10px;
+    border-radius: 5px;
+    font-size: 14px;
+    z-index: 20;
+    animation: notificationFade 2s forwards;
+}
+
+@keyframes notificationFade {
+    0% { opacity: 0; transform: translateY(0); }
+    20% { opacity: 1; transform: translateY(-20px); }
+    80% { opacity: 1; transform: translateY(-40px); }
+    100% { opacity: 0; transform: translateY(-60px); }
+}
+
+/* Эффект щита */
+.shield-effect {
+    position: absolute;
+    width: 70px;
+    height: 70px;
+    border: 3px solid #2ecc71;
+    border-radius: 50%;
+    animation: shieldPulse 1s infinite;
+    z-index: 9;
+}
+
+@keyframes shieldPulse {
+    0%, 100% { transform: scale(1); opacity: 0.7; }
+    50% { transform: scale(1.1); opacity: 0.9; }
+}
+          
+#player.shielded {
+    animation: shieldGlow 1s infinite;
+    box-shadow: 0 0 20px #2ecc71;
+}
+
+@keyframes shieldGlow {
+    0%, 100% { box-shadow: 0 0 20px #2ecc71; }
+    50% { box-shadow: 0 0 30px #2ecc71, 0 0 40px #2ecc71; }
+}
+
+#player.shielded::after {
+    content: '';
+    position: absolute;
+    width: 60px;
+    height: 60px;
+    border: 2px solid #2ecc71;
+    border-radius: 50%;
+    animation: shieldPulse 1.5s infinite;
+}
+
+#gameArea {
+    position: relative;
+    width: 100%;
+    height: 100%;
+    overflow: hidden;
+}
+
+#shop .modal-content {
+    width: 90%;
+    max-width: 500px; /* Увеличиваем максимальную ширину */
+}
+
+#shop .skins,
+#shop .colors,
+#shop .backgrounds {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr); /* Две колонки */
+    gap: 10px;
+    margin-bottom: 15px;
+}
+
+#shop h3 {
+    grid-column: 1 / -1; /* Заголовок занимает всю ширину */
+    margin-bottom: 10px;
+    text-align: center;
+}
+
+.skin, .color-option, .background-option {
+    margin: 0;
+    padding: 8px;
+    font-size: 14px;
+    text-align: center;
+    min-height: 60px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+#shop .modal-content h2 {
+    text-align: center;
+    margin-bottom: 20px;
+}
+
+#shop p {
+    text-align: center;
+    margin-bottom: 20px;
+    font-size: 16px;
+    font-weight: bold;
+}
+
+#closeShop {
+    grid-column: 1 / -1;
+    margin-top: 20px;
+}
+
+.shop-sections {
+    display: flex;
+    flex-direction: column;
+    gap: 20px;
+}
+
+.shop-section {
+    background: rgba(0, 0, 0, 0.2);
+    padding: 15px;
+    border-radius: 8px;
+}
+
+.items-grid {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 8px;
+}
+
+.shop-section h3 {
+    text-align: center;
+    margin-bottom: 15px;
+    color: #f1c40f;
 }
