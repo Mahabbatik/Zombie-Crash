@@ -21,6 +21,12 @@ class ZombieGame {
         
         // Отложим инициализацию остальных элементов до полной загрузки DOM
         this.delayedInit();
+
+        this.bonusTypes = [
+        { type: 'star', emoji: '⭐', chance: 0.6, duration: 10000, effect: 'points' },
+        { type: 'diamond', emoji: '💎', chance: 0.3, duration: 8000, effect: 'multiplier' },
+        { type: 'shield', emoji: '🛡️', chance: 0.1, duration: 5000, effect: 'invincibility' }
+];
     }
 
     delayedInit() {
@@ -128,7 +134,17 @@ class ZombieGame {
             currentSoundVolume: parseFloat(localStorage.getItem('soundVolume')) || 1,
             currentColor: localStorage.getItem('selectedColor') || "#e74c3c",
             selectedSkin: localStorage.getItem('selectedSkin') || "🤪",
-            selectedBackground: localStorage.getItem('selectedBackground') || "default"
+            selectedBackground: localStorage.getItem('selectedBackground') || "default",
+            bonuses: [],
+            activeEffects: {
+            multiplier: { active: false, value: 1, timeout: null },
+            invincibility: { active: false, timeout: null }
+    },
+    intervals: {
+        // ... существующие интервалы
+        createBonus: null,
+        bonusMove: []
+    }
         };
 
         this.init();
@@ -313,6 +329,200 @@ class ZombieGame {
     this.startGame();
 }
 
+createBonus() {
+    if (this.state.isPaused || this.state.gameOver) return;
+    
+    // Случайный шанс появления бонуса (5%)
+    if (Math.random() > 0.05) return;
+    
+    const bonusType = this.getRandomBonusType();
+    const bonus = document.createElement('div');
+    bonus.className = `bonus ${bonusType.type}`;
+    bonus.textContent = bonusType.emoji;
+    bonus.dataset.type = bonusType.type;
+    bonus.style.position = 'absolute';
+    bonus.style.left = `${Math.random() * (this.elements.gameArea.clientWidth - 30)}px`;
+    bonus.style.top = '0px'; // Изменено с -50px на 0px
+    
+    this.elements.gameArea.appendChild(bonus);
+    this.state.bonuses.push(bonus);
+    
+    const intervalId = setInterval(() => this.moveBonus(bonus), 30);
+    this.state.intervals.bonusMove.push(intervalId);
+}
+getRandomBonusType() {
+    const rand = Math.random();
+    let cumulativeChance = 0;
+    
+    for (const bonus of this.bonusTypes) {
+        cumulativeChance += bonus.chance;
+        if (rand <= cumulativeChance) {
+            return bonus;
+        }
+    }
+    return this.bonusTypes[0];
+}
+
+moveBonus(bonus) {
+    if (this.state.gameOver || this.state.isPaused) return;
+    
+    // Получаем актуальные координаты после перемещения
+    const bonusRect = bonus.getBoundingClientRect();
+    const gameAreaRect = this.elements.gameArea.getBoundingClientRect();
+    
+    // Удаляем бонус если он упал за экран
+    if (bonusRect.top > gameAreaRect.bottom) {
+        this.removeBonus(bonus);
+        return;
+    }
+    
+    // Двигаем бонус вниз
+    const currentTop = parseInt(bonus.style.top) || 0;
+    bonus.style.top = `${currentTop + 7}px`;
+    
+    // Получаем новые координаты после перемещения
+    const newBonusRect = bonus.getBoundingClientRect();
+    const playerRect = this.elements.player.getBoundingClientRect();
+    
+    // Проверяем коллизию с игроком
+    if (this.checkBonusCollision(newBonusRect, playerRect)) {
+        this.collectBonus(bonus);
+    }
+}
+    
+    
+checkBonusCollision(bonusRect, playerRect) {
+    // Проверяем пересечение bounding boxes
+    const collisionX = bonusRect.left <= playerRect.right && 
+                      bonusRect.right >= playerRect.left;
+    const collisionY = bonusRect.top <= playerRect.bottom && 
+                      bonusRect.bottom >= playerRect.top;
+    
+    return collisionX && collisionY;
+}
+
+collectBonus(bonus) {
+    const type = bonus.dataset.type;
+    const bonusData = this.bonusTypes.find(b => b.type === type);
+    
+    this.showBonusNotification(bonusData.emoji, this.getBonusName(type));
+    this.playSound(this.audio.coinSound);
+    
+    switch (type) {
+        case 'star':
+            this.applyStarBonus();
+            break;
+        case 'diamond':
+            this.applyDiamondBonus();
+            break;
+        case 'shield':
+            this.applyShieldBonus();
+            break;
+    }
+    
+    this.removeBonus(bonus);
+}
+
+getBonusName(type) {
+    const names = {
+        'star': 'Бонусные очки',
+        'diamond': 'Множитель x2',
+        'shield': 'Неуязвимость'
+    };
+    return names[type] || 'Бонус';
+}
+
+applyStarBonus() {
+    const points = 50 + Math.floor(this.state.score / 10);
+    this.state.score += points;
+    this.state.totalScore += points;
+    
+    this.showFloatingText(`+${points} очков!`, '#f1c40f');
+    this.updateScoreDisplay();
+}
+
+applyDiamondBonus() {
+    // Сбрасываем предыдущий множитель если был
+    if (this.state.activeEffects.multiplier.timeout) {
+        clearTimeout(this.state.activeEffects.multiplier.timeout);
+    }
+    
+    this.state.activeEffects.multiplier = {
+        active: true,
+        value: 2,
+        timeout: setTimeout(() => {
+            this.state.activeEffects.multiplier.active = false;
+            this.showFloatingText('Множитель закончился!', '#3498db');
+        }, 10000)
+    };
+    
+    this.showFloatingText('x2 множитель активирован!', '#3498db');
+}
+
+applyShieldBonus() {
+    // Сбрасываем предыдущий щит если был
+    if (this.state.activeEffects.invincibility.timeout) {
+        clearTimeout(this.state.activeEffects.invincibility.timeout);
+    }
+    
+    this.state.activeEffects.invincibility = {
+        active: true,
+        timeout: setTimeout(() => {
+            this.state.activeEffects.invincibility.active = false;
+            this.elements.player.classList.remove('shielded');
+            this.showFloatingText('Щит закончился!', '#2ecc71');
+        }, 5000)
+    };
+    
+    this.elements.player.classList.add('shielded');
+    this.showFloatingText('Щит активирован!', '#2ecc71');
+}
+
+showBonusNotification(emoji, text) {
+    const notification = document.createElement('div');
+    notification.className = 'bonus-notification';
+    notification.innerHTML = `${emoji} ${text}`;
+    notification.style.left = `${this.elements.player.offsetLeft}px`;
+    notification.style.top = `${this.elements.player.offsetTop - 30}px`;
+    
+    this.elements.gameArea.appendChild(notification);
+    
+    setTimeout(() => {
+        notification.remove();
+    }, 2000);
+}
+
+showFloatingText(text, color) {
+    const floatingText = document.createElement('div');
+    floatingText.className = 'bonus-notification';
+    floatingText.textContent = text;
+    floatingText.style.color = color;
+    floatingText.style.left = `${this.elements.player.offsetLeft}px`;
+    floatingText.style.top = `${this.elements.player.offsetTop - 20}px`;
+    floatingText.style.fontWeight = 'bold';
+    
+    this.elements.gameArea.appendChild(floatingText);
+    
+    setTimeout(() => {
+        floatingText.remove();
+    }, 2000);
+}
+
+removeBonus(bonus) {
+    const index = this.state.bonuses.indexOf(bonus);
+    if (index !== -1) {
+        const intervalIndex = this.state.intervals.bonusMove.findIndex(
+            (_, i) => i === index
+        );
+        if (intervalIndex !== -1) {
+            clearInterval(this.state.intervals.bonusMove[intervalIndex]);
+            this.state.intervals.bonusMove.splice(intervalIndex, 1);
+        }
+        this.state.bonuses.splice(index, 1);
+        bonus.remove();
+    }
+}
+
     showMainMenu() {
         this.updateMenuScores();
         this.showModal(this.elements.mainMenu);
@@ -377,6 +587,7 @@ updateRanksModal() {
     startGame() {
     this.resetGameState();
     this.state.intervals.createZombie = setInterval(() => this.createZombie(), this.state.zombieSpawnRate);
+    this.state.intervals.createBonus = setInterval(() => this.createBonus(), 2000); // Каждые 2 секунды проверяем
 }
 
     resetGameState() {
@@ -387,7 +598,11 @@ updateRanksModal() {
         this.state.isPaused = false;
         this.state.zombies = [];
         this.state.intervals.zombieMove = [];
-        
+        this.state.bonuses = [];
+        this.state.activeEffects = {
+        multiplier: { active: false, value: 1, timeout: null },
+        invincibility: { active: false, timeout: null }
+    };
         this.elements.scoreDisplay.textContent = `Счёт: ${this.state.score}`;
         this.elements.highScoreDisplay.textContent = `Рекорд: ${this.state.highScore}`;
         this.elements.shopScore.textContent = this.state.totalScore;
@@ -450,7 +665,10 @@ updateRanksModal() {
     }
 
     checkCollision(zombieRect, playerRect) {
-        if (this.elements.player.classList.contains('invincible')) return false;
+        if (this.elements.player.classList.contains('invincible') || 
+        this.state.activeEffects.invincibility.active) {
+        return false;
+    }
         
         const zombieCenterX = zombieRect.left + zombieRect.width / 2;
         const zombieCenterY = zombieRect.top + zombieRect.height / 2;
@@ -486,6 +704,13 @@ updateRanksModal() {
         this.state.score++;
         this.state.totalScore++;
         
+        let points = 1;
+    if (this.state.activeEffects.multiplier.active) {
+        points *= this.state.activeEffects.multiplier.value;
+    }
+    
+    this.state.score += points;
+    this.state.totalScore += points;
         let xpEarned = 1;
         if (this.state.score % 15 === 0) {
             xpEarned += 5;
@@ -698,8 +923,11 @@ updateRanksModal() {
 
     clearAllIntervals() {
         clearInterval(this.state.intervals.createZombie);
-        this.state.intervals.zombieMove.forEach(clearInterval);
-        this.state.intervals.zombieMove = [];
+    clearInterval(this.state.intervals.createBonus);
+    this.state.intervals.zombieMove.forEach(clearInterval);
+    this.state.intervals.bonusMove.forEach(clearInterval);
+    this.state.intervals.zombieMove = [];
+    this.state.intervals.bonusMove = [];
     }
 
     openShop() {
