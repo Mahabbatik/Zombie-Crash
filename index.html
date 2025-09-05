@@ -13,6 +13,11 @@
             <div class="menu-header">
                 <h1 class="menu-title">ZOMBIE CRASH</h1>
                 <div class="menu-subtitle">Уворачивайся от зомби и собирай очки!</div>
+                <a href="https://t.me/Nedoprogrammist_MHBBT" target="_blank" style="position: fixed; bottom: 20px; right: 20px; z-index: 1000;">
+    <img src="https://upload.wikimedia.org/wikipedia/commons/8/82/Telegram_logo.svg" 
+         alt="Telegram" 
+         style="width: 40px; height: 40px; border-radius: 50%; box-shadow: 0 2px 10px rgba(0,0,0,0.3);">
+</a>
             </div>
             
             <div class="menu-buttons">
@@ -71,6 +76,9 @@
             </div>
             
             <div id="hitEffect"></div>
+            <div class="bonus" style="display: none;">⭐</div>
+            <div class="bonus" style="display: none;">💎</div>
+            <div class="bonus" style="display: none;">🛡️</div>
         </div>
     </div>
 
@@ -101,29 +109,32 @@
             
             <div class="skins">
                 <h3>😀 Скины</h3>
-                <div class="skin owned selected" data-skin="🤪" data-price="0">🤪 (Бесплатно)</div>
-                <div class="skin" data-skin="😎" data-price="250">😎 (250 очков)</div>
-                <div class="skin" data-skin="👽" data-price="2500">👽 (2500 очков)</div>
-                <div class="skin" data-skin="🦸" data-price="500">🦸 (500 очков)</div>
-                <div class="skin" data-skin="🐲" data-price="400">🐲 (400 очков)</div>
+                <spone  class="skin owned selected" data-skin="🤪" data-price="0">🤪 (Бесплатно)</spone >
+                <spone  class="skin" data-skin="😎" data-price="1000">😎 (1000 очков)</spone >
+                <spone  class="skin" data-skin="🦸" data-price="5000">🦸 (5000 очков)</spone>
+                <spone  class="skin" data-skin="🐲" data-price="7000">🐲 (7000 очков)</spone >
+                <spone  class="skin" data-skin="👽" data-price="10000">👽 (10000 очков)</spone >
+                <spone  class="skin" data-skin="💀" data-price="15000">💀 (15000 очков)</spone >
             </div>
             
             <div class="colors">
                 <h3>🎨 Цвета</h3>
-                <div class="color-option owned selected" data-color="#e74c3c" data-price="100">🔴 Красный (100 очков)</div>
-                <div class="color-option" data-color="#3498db" data-price="500">🔵 Синий (500 очков)</div>
-                <div class="color-option" data-color="#2ecc71" data-price="650">🟢 Зеленый (650 очков)</div>
-                <div class="color-option" data-color="#f1c40f" data-price="800">🟡 Желтый (800 очков)</div>
-                <div class="color-option" data-color="#9b59b6" data-price="1000">🟣 Фиолетовый (1000 очков)</div>
+                <div class="color-option owned selected" data-color="#e74c3c" data-price="0">🔴 Красный (Бесплатно)</div>
+                <div class="color-option" data-color="#3498db" data-price="1000">🔵 Синий (1000 очков)</div>
+                <div class="color-option" data-color="#2ecc71" data-price="3000">🟢 Зеленый (3000 очков)</div>
+                <div class="color-option" data-color="#f1c40f" data-price="5000">🟡 Желтый (5000 очков)</div>
+                <div class="color-option" data-color="#9b59b6" data-price="10000">🟣 Фиолетовый (10000 очков)</div>
+                <div class="color-option" data-color="#000000" data-price="20000">⚫ Черный (20000 очков)</div>
+                
             </div>
             
             <div class="backgrounds">
                 <h3>🌄 Фоны</h3>
                 <div class="background-option owned selected" data-background="default" data-price="0">Стандартный (Бесплатно)</div>
-                <div class="background-option" data-background="space" data-price="10000">🌌 Космос (10000 очков)</div>
-                <div class="background-option" data-background="forest" data-price="10000">🌲 Лес (10000 очков)</div>
-                <div class="background-option" data-background="beach" data-price="10000">🏖️ Пляж (10000 очков)</div>
-                <div class="background-option" data-background="city" data-price="10000">🏙️ Город (10000 очков)</div>
+                <div class="background-option" data-background="space" data-price="999999">🌌 Космос (Невозможен к получению)</div>
+                <div class="background-option" data-background="forest" data-price="999999">🌲 Лес (Невозможен к получению)</div>
+                <div class="background-option" data-background="beach" data-price="999999">🏖️ Пляж (Невозможен к получению)</div>
+                <div class="background-option" data-background="city" data-price="999999">🏙️ Город (Невозможен к получению)</div>
             </div>
             
             <button id="closeShop">Закрыть</button>
@@ -171,6 +182,7 @@
     <div>Скорость: <span id="zombieSpeed">8</span></div>
     <div>Частота: <span id="zombieSpawnRate">1</span>/сек</div>
 </div>
+
     
     <script src="script.js"></script>
 </body>
