@@ -19,7 +19,7 @@ class AudioManager {
             hitSound: 'sounds/hit.mp3',
             coinSound: 'sounds/coin.mp3',
             explosionSound: 'sounds/explosion.mp3',
-            rankUpSound: 'https://assets.mixkit.co/sfx/preview/mixkit-achievement-bell-600.mp3'
+            rankUpSound: 'sounds/a319a0c853d8550.mp3'
         };
     }
 
