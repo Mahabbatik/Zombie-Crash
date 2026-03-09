@@ -3,21 +3,27 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>🧟Zombie Crash🧟</title>
+    <title>🧟Зомби-Атака.🧟</title>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/animate.css/4.1.1/animate.min.css">
     <link rel="stylesheet" href="style.css">
+
+<!-- Yandex Games SDK -->
+<script src="/sdk.js"></script>
+<script>window.yaContextCb=window.yaContextCb||[]</script>
+<script src="https://yandex.ru/ads/system/context.js" async></script>
+
 </head>
-<body>
+<body oncontextmenu="return false" ontouchstart="">
+    
     <div id="mainMenu" class="modal show">
         <div class="menu-content">
             <div class="menu-header">
-                <h1 class="menu-title">ZOMBIE CRASH</h1>
+                <h1 class="menu-title">Зомби-Атака</h1>
                 <div class="menu-subtitle">Уворачивайся от зомби и собирай очки!</div>
-                <a href="https://t.me/Nedoprogrammist_MHBBT" target="_blank" style="position: fixed; bottom: 20px; right: 20px; z-index: 1000;">
-    <img src="https://upload.wikimedia.org/wikipedia/commons/8/82/Telegram_logo.svg" 
-         alt="Telegram" 
-         style="width: 40px; height: 40px; border-radius: 50%; box-shadow: 0 2px 10px rgba(0,0,0,0.3);">
-</a>
+<button id="enableSound" class="menu-btn sound-btn">
+    🔇 Включить звук
+</button>
+                
             </div>
             
             <div class="menu-buttons">
@@ -38,6 +44,10 @@
                 </button>
             </div>
             
+
+
+
+
             <div class="menu-footer">
                 <div class="high-score">
                     🏆 Рекорд: <span id="menuHighScore">0</span>
@@ -68,7 +78,7 @@
                         <img src="images/ranks/iron_I.png" alt="Iron I" class="rank-icon">
                     </div>
                     <div id="rankInfo">
-                        <span id="rankName">Iron I</span>
+                        <span id="rankName">Серебро I</span>
                         <progress id="rankProgress" value="0" max="100"></progress>
                         <span id="rankProgressText">0/100 XP</span>
                     </div>
@@ -84,7 +94,7 @@
 
     <div id="gameOverScreen" class="modal">
         <div class="modal-content">
-            <h1 class="animate__animated animate__shakeX">GAME OVER</h1>
+            <h1 class="animate__animated animate__shakeX">Попробуй ещё раз</h1>
             <p>Ваш счёт: <span id="finalScoreValue">0</span></p>
             <button id="restartButton">🔄 Начать заново</button>
             <button id="backToMenuBtn">📋 В меню</button>
@@ -95,7 +105,7 @@
 
     <div id="pauseScreen" class="modal">
         <div class="modal-content">
-            <h1 class="animate__animated animate__pulse">PAUSED</h1>
+            <h1 class="animate__animated animate__pulse">Пауза</h1>
             <button id="pauseShopButton">🛍️ Магазин</button>
             <button id="resumeButton">▶️ Продолжить</button>
             <button id="pauseToMenuBtn">📋 В меню</button>
@@ -129,12 +139,12 @@
             </div>
             
             <div class="backgrounds">
-                <h3>🌄 Фоны</h3>
+                <h3>🌄 Фоны (скоро)</h3>
                 <div class="background-option owned selected" data-background="default" data-price="0">Стандартный (Бесплатно)</div>
-                <div class="background-option" data-background="space" data-price="999999">🌌 Космос (Невозможен к получению)</div>
-                <div class="background-option" data-background="forest" data-price="999999">🌲 Лес (Невозможен к получению)</div>
-                <div class="background-option" data-background="beach" data-price="999999">🏖️ Пляж (Невозможен к получению)</div>
-                <div class="background-option" data-background="city" data-price="999999">🏙️ Город (Невозможен к получению)</div>
+                <div class="background-option" data-background="space" data-price="1">🌌 Космос (Невозможен к получению)</div>
+                <div class="background-option" data-background="forest" data-price="1">🌲 Лес (Невозможен к получению)</div>
+                <div class="background-option" data-background="beach" data-price="1">🏖️ Пляж (Невозможен к получению)</div>
+                <div class="background-option" data-background="city" data-price="1">🏙️ Город (Невозможен к получению)</div>
             </div>
             
             <button id="closeShop">Закрыть</button>
@@ -155,11 +165,6 @@
             <button id="closeSettings">Закрыть</button>
         </div>
     </div>
-
-    <audio id="backgroundMusic" loop src="sounds/www90.mp3"></audio>
-    <audio id="hitSound" src="sounds/hit.mp3"></audio>
-    <audio id="coinSound" src=""></audio>
-    <audio id="explosionSound" src=""></audio>
 
     <div id="ranksModal" class="modal">
     <div class="modal-content">
@@ -183,7 +188,30 @@
     <div>Частота: <span id="zombieSpawnRate">1</span>/сек</div>
 </div>
 
-    
     <script src="script.js"></script>
+
+    <script>
+    YaGames
+    .init({ signed: true })
+    .then(ysdk => {
+        console.log('Yandex SDK initialized');
+        window.ysdk = ysdk;
+        ysdk.features.LoadingAPI?.ready()
+        ysdk.environment.i18n.lang
+    })  
+    .catch(console.error)
+    ysdk.feedback.canReview()
+        .then(({ value, reason }) => {
+            if (value) {
+                ysdk.feedback.requestReview()
+                    .then(({ feedbackSent }) => {
+                        console.log(feedbackSent);
+                    })
+            } else {
+                console.log(reason)
+            }
+        });
+    </script>
+
 </body>
 </html>
