@@ -1,3 +1,4 @@
+
 * {
     box-sizing: border-box;
     margin: 0;
@@ -23,13 +24,12 @@ body {
     max-width: 400px;
     height: 600px;
     margin: 0 auto;
-    background-color: #466a96;
+    background-color: #354355;
     overflow: hidden; 
     border-radius: 10px;
-    background-size: cover; /* Ensure the background covers the entire area */
-    background-position: center; /* Center the background image */
-    z-index: 1
-
+    background-size: cover;
+    background-position: center;
+    z-index: 1;
 }
 
 #gameArea {
@@ -247,13 +247,19 @@ button {
     cursor: pointer;
     transition: all 0.3s;
     width: 100%;
-    box-shadow: #ffffff ;
+    box-shadow: #ffffff;
     background: linear-gradient(145deg, #3498db, #2980b9);
     color: white;
 }
 
 button:hover {
     transform: scale(1.05);
+}
+
+button:disabled {
+    opacity: 0.6;
+    cursor: not-allowed;
+    transform: none;
 }
 
 #hitEffect {
@@ -373,65 +379,28 @@ button:hover {
 
 .game-container.space-bg {
     background: url('https://images.unsplash.com/photo-1454789548928-9efd52dc4031?ixlib=rb-1.2.1&auto=format&fit=crop&w=800&q=80') no-repeat center center;
-    background-size: auto;
-    z-index: 1000
+    background-size: cover;
+    z-index: 1000;
 }
 
 .game-container.forest-bg {
     background: url('https://images.unsplash.com/photo-1448375240586-882707db888b?ixlib=rb-1.2.1&auto=format&fit=crop&w=800&q=80') no-repeat center center;
-    background-size: auto;
-    z-index: 1000
+    background-size: cover;
+    z-index: 1000;
 }
 
 .game-container.beach-bg {
     background: url('https://images.unsplash.com/photo-1505228395891-9a51e7e86bf6?ixlib=rb-1.2.1&auto=format&fit=crop&w=800&q=80') no-repeat center center;
-    background-size: auto;
-    z-index: 1000
+    background-size: cover;
+    z-index: 1000;
 }
 
 .game-container.city-bg {
     background: url('https://images.unsplash.com/photo-1477959858617-67f85cf4f1df?ixlib=rb-1.2.1&auto=format&fit=crop&w=800&q=80') no-repeat center center;
     background-size: cover;
-    z-index: 1000
-}
-.modal {
-    position: fixed;
-    top: 0;
-    left: 0;
-    right: 0;
-    bottom: 0;
-    background-color: rgba(0, 0, 0, 0.7);
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    z-index: 1000; /* Базовый z-index для модальных окон */
-    opacity: 0;
-    pointer-events: none;
-    transition: opacity 0.3s;
-    backdrop-filter: blur(5px);
+    z-index: 1000;
 }
 
-#shop {
-    z-index: 1001; /* Магазин выше других модальных окон */
-    
-}
-
-#settingsModal {
-    z-index: 1001; /* Настройки выше других модальных окон */
-}
-
-#gameArea {
-    position: relative;
-    width: 100%;
-    height: 100%;
-    border: 2px solid #ecf0f1;
-    overflow: hidden;
-    background-color: #333b42;
-    box-shadow: 0 0 20px rgba(0, 0, 0, 0.5);
-    border-radius: 10px;
-    z-index: -1; /* Основная игровая область */
-    
-}
 .rank-icon {
     width: 40px;
     height: 40px;
@@ -449,6 +418,7 @@ button:hover {
     height: 100%;
     object-fit: contain;
 }
+
 /* Стили главного меню */
 #mainMenu {
     z-index: 2000;
@@ -534,6 +504,19 @@ button:hover {
     left: 100%;
 }
 
+.sound-btn {
+    background: linear-gradient(145deg, #95a5a6, #7f8c8d);
+    color: white;
+    font-size: 1em;
+    padding: 12px 20px;
+    margin-top: 10px;
+}
+
+.sound-btn:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 5px 15px rgba(149, 165, 166, 0.4);
+}
+
 .play-btn {
     background: linear-gradient(145deg, #27ae60, #2ecc71);
     color: white;
@@ -600,7 +583,6 @@ button:hover {
     50% { transform: translateY(-10px); }
 }
 
-/* Анимация появления меню */
 @keyframes menuAppear {
     from {
         opacity: 0;
@@ -616,7 +598,6 @@ button:hover {
     animation: menuAppear 0.8s ease-out;
 }
 
-/* Адаптивность для мобильных */
 @media (max-width: 480px) {
     .menu-content {
         padding: 20px;
@@ -638,7 +619,6 @@ button:hover {
     }
 }
 
-/* Эффект частиц для фона */
 .menu-particle {
     position: absolute;
     background: rgba(255, 255, 255, 0.3);
@@ -660,7 +640,7 @@ button:hover {
         opacity: 0;
     }
 }
-/* Улучшения для touch устройств */
+
 .menu-btn, button {
     -webkit-tap-highlight-color: transparent;
     touch-action: manipulation;
@@ -668,13 +648,11 @@ button:hover {
     cursor: pointer;
 }
 
-/* Анимация нажатия для кнопок */
 .menu-btn:active, button:active {
     transform: scale(0.95) !important;
     transition: transform 0.1s ease;
 }
 
-/* Для мобильных устройств */
 @media (max-width: 768px) {
     .menu-btn, button {
         min-height: 50px;
@@ -686,7 +664,6 @@ button:hover {
     }
 }
 
-/* Добавьте в конец файла */
 .game-container {
     z-index: 1 !important;
     position: relative;
@@ -705,29 +682,24 @@ button:hover {
     z-index: 1001 !important;
 }
 
-/* Убедитесь, что модальные окна поверх всего */
 .modal {
     z-index: 1000;
     position: fixed;
 }
 
-/* Главное меню должно быть поверх игровой области */
 #mainMenu {
     z-index: 1001;
 }
 
-/* Другие модальные окна поверх главного меню */
 #shop, #settingsModal, #pauseScreen, #gameOverScreen {
     z-index: 1002;
 }
 
-/* Игровая область должна быть под всем */
 .game-container, #gameArea {
     z-index: 1;
     position: relative;
 }
 
-/* Стили для модального окна рангов */
 .ranks-list {
     max-height: 300px;
     overflow-y: auto;
@@ -803,6 +775,7 @@ button:hover {
     color: #bdc3c7;
     text-align: center;
 }
+
 #zombieInfo {
     position: absolute;
     top: 70px;
@@ -819,7 +792,6 @@ button:hover {
     margin: 3px 0;
 }
 
-/* Добавьте в конец style.css */
 .bonus {
     position: absolute;
     width: 30px;
@@ -864,7 +836,6 @@ button:hover {
     100% { opacity: 0; transform: translateY(-60px); }
 }
 
-/* Эффект щита */
 .shield-effect {
     position: absolute;
     width: 70px;
@@ -879,7 +850,7 @@ button:hover {
     0%, 100% { transform: scale(1); opacity: 0.7; }
     50% { transform: scale(1.1); opacity: 0.9; }
 }
-          
+
 #player.shielded {
     animation: shieldGlow 1s infinite;
     box-shadow: 0 0 20px #2ecc71;
@@ -900,29 +871,22 @@ button:hover {
     animation: shieldPulse 1.5s infinite;
 }
 
-#gameArea {
-    position: relative;
-    width: 100%;
-    height: 100%;
-    overflow: hidden;
-}
-
 #shop .modal-content {
     width: 90%;
-    max-width: 500px; /* Увеличиваем максимальную ширину */
+    max-width: 500px;
 }
 
 #shop .skins,
 #shop .colors,
 #shop .backgrounds {
     display: grid;
-    grid-template-columns: repeat(2, 1fr); /* Две колонки */
+    grid-template-columns: repeat(2, 1fr);
     gap: 10px;
     margin-bottom: 15px;
 }
 
 #shop h3 {
-    grid-column: 1 / -1; /* Заголовок занимает всю ширину */
+    grid-column: 1 / -1;
     margin-bottom: 10px;
     text-align: center;
 }
@@ -953,6 +917,7 @@ button:hover {
 #closeShop {
     grid-column: 1 / -1;
     margin-top: 20px;
+    margin-left: 1px;
 }
 
 .shop-sections {
@@ -977,4 +942,122 @@ button:hover {
     text-align: center;
     margin-bottom: 15px;
     color: #f1c40f;
+}
+
+* {
+    -webkit-user-select: none;
+    -moz-user-select: none;
+    -ms-user-select: none;
+    user-select: none;
+    -webkit-tap-highlight-color: transparent;
+    -webkit-touch-callout: none;
+}
+
+html, body {
+    touch-action: manipulation;
+    overscroll-behavior: none;
+}
+
+#shop .modal-content {
+    width: 90%;
+    max-width: 500px;
+    max-height: 80vh;
+    overflow-y: auto;
+    padding: 15px;
+}
+
+#shop .skins,
+#shop .colors, 
+#shop .backgrounds {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(120px, 1fr));
+    gap: 8px;
+    margin-bottom: 15px;
+}
+
+.skin, .color-option, .background-option {
+    margin: 0;
+    padding: 8px;
+    font-size: 12px;
+    text-align: center;
+    min-height: 50px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    word-break: break-word;
+    line-height: 1.2;
+}
+
+#shop h3 {
+    grid-column: 1 / -1;
+    margin-bottom: 10px;
+    text-align: center;
+    font-size: 16px;
+}
+
+#shop p {
+    text-align: center;
+    margin-bottom: 15px;
+    font-size: 14px;
+    font-weight: bold;
+}
+
+#shop .modal-content h2 {
+    text-align: center;
+    margin-bottom: 15px;
+    font-size: 20px;
+}
+
+@media (max-width: 320px) {
+    #shop .modal-content {
+        width: 95%;
+        padding: 10px;
+    }
+    
+    .skin, .color-option, .background-option {
+        font-size: 11px;
+        padding: 6px;
+        min-height: 45px;
+    }
+    
+    #shop .skins,
+    #shop .colors,
+    #shop .backgrounds {
+        grid-template-columns: repeat(2, 1fr);
+        gap: 5px;
+    }
+}
+
+@media (min-width: 321px) and (max-width: 480px) {
+    #shop .skins,
+    #shop .colors,
+    #shop .backgrounds {
+        grid-template-columns: repeat(2, 1fr);
+    }
+}
+
+@media (min-width: 481px) {
+    #shop .skins,
+    #shop .colors,
+    #shop .backgrounds {
+        grid-template-columns: repeat(3, 1fr);
+    }
+}
+
+#shop .modal-content::-webkit-scrollbar {
+    width: 6px;
+}
+
+#shop .modal-content::-webkit-scrollbar-track {
+    background: rgba(0, 0, 0, 0.1);
+    border-radius: 3px;
+}
+
+#shop .modal-content::-webkit-scrollbar-thumb {
+    background: #3498db;
+    border-radius: 3px;
+}
+
+#shop .modal-content::-webkit-scrollbar-thumb:hover {
+    background: #2980b9;
 }
