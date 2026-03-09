@@ -1061,3 +1061,39 @@ html, body {
 #shop .modal-content::-webkit-scrollbar-thumb:hover {
     background: #2980b9;
 }
+
+#rankProgressText {
+    font-size: 12px;
+    color: #ecf0f1;
+    transition: all 0.3s;
+}
+
+#rankProgressText.max-rank {
+    font-size: 14px;
+    font-weight: bold;
+    color: #f1c40f;
+    text-shadow: 0 0 10px rgba(241, 196, 15, 0.5);
+}
+
+.rank-xp.max {
+    color: #f1c40f;
+    font-weight: bold;
+    font-size: 14px;
+}
+
+.rank-item.legend-rank {
+    background: linear-gradient(135deg, #8e44ad, #f39c12);
+    border-left: 4px solid #f1c40f;
+    box-shadow: 0 0 15px rgba(241, 196, 15, 0.5);
+}
+
+.rank-item.legend-rank.current {
+    background: linear-gradient(135deg, #9b59b6, #f1c40f);
+    box-shadow: 0 0 20px rgba(241, 196, 15, 0.8);
+    animation: legendGlow 2s infinite;
+}
+
+@keyframes legendGlow {
+    0%, 100% { box-shadow: 0 0 20px rgba(241, 196, 15, 0.8); }
+    50% { box-shadow: 0 0 30px rgba(241, 196, 15, 1), 0 0 40px rgba(155, 89, 182, 0.8); }
+}

@@ -300,23 +300,25 @@ class ZombieGame {
 
         console.log('Elements found:', this.elements);
 
-        this.ranks = [
-            { name: "Серебро I", xpRequired: 0, image: "images/ranks/iron_I.png" },
-            { name: "Серебро II", xpRequired: 100, image: "images/ranks/iron_II.png" },
-            { name: "Серебро III", xpRequired: 300, image: "images/ranks/iron_III.png" },
-            { name: "Золото I", xpRequired: 600, image: "images/ranks/gold_I.png" },
-            { name: "Золото II", xpRequired: 1000, image: "images/ranks/gold_II.png" },
-            { name: "Золото III", xpRequired: 1500, image: "images/ranks/gold_III.png" },
-            { name: "Изумруд I", xpRequired: 2600, image: "images/ranks/emerald_I.png" },
-            { name: "Изумруд II", xpRequired: 3800, image: "images/ranks/emerald_II.png" },
-            { name: "Изумруд III", xpRequired: 5100, image: "images/ranks/emerald_III.png" },
-            { name: "Сапфир I", xpRequired: 6500, image: "images/ranks/sapphire_I.png" },
-            { name: "Сапфир II", xpRequired: 8000, image: "images/ranks/sapphire_II.png" },
-            { name: "Сапфир III", xpRequired: 9600, image: "images/ranks/sapphire_III.png" },
-            { name: "Рубин I", xpRequired: 11300, image: "images/ranks/ruby_I.png" },
-            { name: "Рубин II", xpRequired: 13100, image: "images/ranks/ruby_II.png" },
-            { name: "Рубин III", xpRequired: 15000, image: "images/ranks/ruby_III.png" }
-        ];
+        // Найдите массив ranks в конструкторе и замените его на этот:
+this.ranks = [
+    { name: "Серебро I", xpRequired: 0, image: "images/ranks/iron_I.png" },
+    { name: "Серебро II", xpRequired: 100, image: "images/ranks/iron_II.png" },
+    { name: "Серебро III", xpRequired: 300, image: "images/ranks/iron_III.png" },
+    { name: "Золото I", xpRequired: 600, image: "images/ranks/gold_I.png" },
+    { name: "Золото II", xpRequired: 1000, image: "images/ranks/gold_II.png" },
+    { name: "Золото III", xpRequired: 1500, image: "images/ranks/gold_III.png" },
+    { name: "Изумруд I", xpRequired: 2600, image: "images/ranks/emerald_I.png" },
+    { name: "Изумруд II", xpRequired: 3800, image: "images/ranks/emerald_II.png" },
+    { name: "Изумруд III", xpRequired: 5100, image: "images/ranks/emerald_III.png" },
+    { name: "Сапфир I", xpRequired: 6500, image: "images/ranks/sapphire_I.png" },
+    { name: "Сапфир II", xpRequired: 8000, image: "images/ranks/sapphire_II.png" },
+    { name: "Сапфир III", xpRequired: 9600, image: "images/ranks/sapphire_III.png" },
+    { name: "Рубин I", xpRequired: 11300, image: "images/ranks/ruby_I.png" },
+    { name: "Рубин II", xpRequired: 13100, image: "images/ranks/ruby_II.png" },
+    { name: "Рубин III", xpRequired: 15000, image: "images/ranks/ruby_III.png" },
+    { name: "Легенда", xpRequired: 20000, image: "images/ranks/legend.png", isMax: true }
+];
 
         this.state = {
             lives: 3,
@@ -847,29 +849,36 @@ class ZombieGame {
     }
 
     updateRanksModal() {
-        this.elements.ranksList.innerHTML = '';
+    this.elements.ranksList.innerHTML = '';
+    
+    this.ranks.forEach((rank, index) => {
+        const rankItem = document.createElement('div');
+        rankItem.className = 'rank-item';
         
-        this.ranks.forEach((rank, index) => {
-            const rankItem = document.createElement('div');
-            rankItem.className = 'rank-item';
-            
-            if (index === this.state.currentRank) {
-                rankItem.classList.add('current');
-            }
-            
-            rankItem.innerHTML = `
-                <img src="${rank.image}" alt="${rank.name}" class="rank-icon">
-                <div class="rank-info">
-                    <div class="rank-name">${rank.name}</div>
-                    <div class="rank-xp">${rank.xpRequired} XP</div>
-                </div>
-            `;
-            
-            this.elements.ranksList.appendChild(rankItem);
-        });
+        const isMax = rank.isMax || index === this.ranks.length - 1;
+        if (isMax) {
+            rankItem.classList.add('legend-rank');
+        }
         
-        this.updateCurrentRankInfo();
-    }
+        if (index === this.state.currentRank) {
+            rankItem.classList.add('current');
+        }
+        
+        const xpText = isMax ? '★ МАКС ★' : `${rank.xpRequired} XP`;
+        
+        rankItem.innerHTML = `
+            <img src="${rank.image}" alt="${rank.name}" class="rank-icon">
+            <div class="rank-info">
+                <div class="rank-name">${rank.name}</div>
+                <div class="rank-xp ${isMax ? 'max' : ''}">${xpText}</div>
+            </div>
+        `;
+        
+        this.elements.ranksList.appendChild(rankItem);
+    });
+    
+    this.updateCurrentRankInfo();
+}
 
     startGame() {
         this.resetGameState();
@@ -1065,38 +1074,61 @@ class ZombieGame {
         this.playSound('coinSound');
     }
 
-    updateRank() {
-        let rankIncreased = false;
-        
-        while (this.state.currentRank < this.ranks.length - 1 && 
-               this.state.currentXp >= this.ranks[this.state.currentRank + 1].xpRequired) {
-            this.state.currentRank++;
-            rankIncreased = true;
-            localStorage.setItem('currentRank', this.state.currentRank);
-        }
-        
-        const currentRank = this.ranks[this.state.currentRank];
-        const nextRank = this.state.currentRank < this.ranks.length - 1 ? 
-            this.ranks[this.state.currentRank + 1] : currentRank;
-        
+   updateRank() {
+    let rankIncreased = false;
+    const previousRank = this.state.currentRank;
+    const wasMaxRank = this.state.currentRank >= this.ranks.length - 1;
+    
+    // Проверяем повышение ранга
+    while (this.state.currentRank < this.ranks.length - 1 && 
+           this.state.currentXp >= this.ranks[this.state.currentRank + 1].xpRequired) {
+        this.state.currentRank++;
+        rankIncreased = true;
+        localStorage.setItem('currentRank', this.state.currentRank);
+    }
+    
+    // Если уже Легенда, просто сохраняем XP (бесконечный прогресс)
+    if (wasMaxRank || this.state.currentRank >= this.ranks.length - 1) {
+        localStorage.setItem('currentXp', this.state.currentXp);
+    }
+    
+    const currentRank = this.ranks[Math.min(this.state.currentRank, this.ranks.length - 1)];
+    const isMaxRank = this.state.currentRank >= this.ranks.length - 1;
+    
+    // Обновляем отображение
+    this.elements.rankImage.innerHTML = `<img src="${currentRank.image}" alt="${currentRank.name}" class="rank-icon">`;
+    this.elements.rankName.textContent = currentRank.name;
+    
+    if (isMaxRank) {
+        this.elements.rankProgress.style.display = 'none';
+        this.elements.rankProgressText.textContent = '★ МАКС ★';
+        this.elements.rankProgressText.style.fontWeight = 'bold';
+        this.elements.rankProgressText.style.color = '#f1c40f';
+        this.elements.rankProgressText.style.fontSize = '14px';
+        this.elements.rankProgressText.style.textShadow = '0 0 10px rgba(241, 196, 15, 0.8)';
+    } else {
+        this.elements.rankProgress.style.display = 'block';
+        const nextRank = this.ranks[this.state.currentRank + 1];
         const xpForNextRank = nextRank.xpRequired - currentRank.xpRequired;
         const xpInCurrentRank = this.state.currentXp - currentRank.xpRequired;
-        const progress = (xpInCurrentRank / xpForNextRank) * 100;
+        const progress = Math.min(100, (xpInCurrentRank / xpForNextRank) * 100);
         
-        this.elements.rankImage.innerHTML = `<img src="${currentRank.image}" alt="${currentRank.name}" class="rank-icon">`;
-        this.elements.rankName.textContent = currentRank.name;
         this.elements.rankProgress.value = progress;
-        this.elements.rankProgressText.textContent = 
-            `${xpInCurrentRank}/${xpForNextRank} XP`;
-        
-        if (this.elements.ranksModal.classList.contains('show')) {
-            this.updateRanksModal();
-        }
-        
-        if (rankIncreased) {
-            this.showRankUpNotification(currentRank);
-        }
+        this.elements.rankProgressText.textContent = `${xpInCurrentRank}/${xpForNextRank} XP`;
+        this.elements.rankProgressText.style.fontWeight = 'normal';
+        this.elements.rankProgressText.style.color = '#ecf0f1';
+        this.elements.rankProgressText.style.fontSize = '12px';
+        this.elements.rankProgressText.style.textShadow = 'none';
     }
+    
+    if (this.elements.ranksModal.classList.contains('show')) {
+        this.updateRanksModal();
+    }
+    
+    if (rankIncreased && previousRank !== this.state.currentRank) {
+        this.showRankUpNotification(currentRank);
+    }
+}
 
     showRankUpNotification(rank) {
         this.playSound('rankUpSound');
@@ -1462,19 +1494,29 @@ class ZombieGame {
     }
 
     updateCurrentRankInfo() {
-        const currentRank = this.ranks[this.state.currentRank];
-        const nextRank = this.state.currentRank < this.ranks.length - 1 ? 
-            this.ranks[this.state.currentRank + 1] : currentRank;
-        
+    const currentRank = this.ranks[this.state.currentRank];
+    const isMaxRank = currentRank.isMax || this.state.currentRank === this.ranks.length - 1;
+    
+    this.elements.currentRankName.textContent = currentRank.name;
+    
+    if (isMaxRank) {
+        this.elements.currentRankProgress.style.display = 'none';
+        this.elements.currentRankXP.textContent = 'МАКС РАНГ ДОСТИГНУТ!';
+        this.elements.currentRankXP.style.color = '#f1c40f';
+        this.elements.currentRankXP.style.fontWeight = 'bold';
+    } else {
+        this.elements.currentRankProgress.style.display = 'block';
+        const nextRank = this.ranks[this.state.currentRank + 1];
         const xpForNextRank = nextRank.xpRequired - currentRank.xpRequired;
         const xpInCurrentRank = this.state.currentXp - currentRank.xpRequired;
         const progress = (xpInCurrentRank / xpForNextRank) * 100;
         
-        this.elements.currentRankName.textContent = currentRank.name;
         this.elements.currentRankProgress.value = progress;
-        this.elements.currentRankXP.textContent = 
-            `${xpInCurrentRank}/${xpForNextRank} XP (Всего: ${this.state.currentXp} XP)`;
+        this.elements.currentRankXP.textContent = `${xpInCurrentRank}/${xpForNextRank} XP (Всего: ${this.state.currentXp} XP)`;
+        this.elements.currentRankXP.style.color = '#bdc3c7';
+        this.elements.currentRankXP.style.fontWeight = 'normal';
     }
+}
 
     closeRanks() {
         this.hideModal(this.elements.ranksModal);
