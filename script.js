@@ -1,4 +1,3 @@
-
 class AudioManager {
     constructor() {
         this.audioContext = null;
@@ -13,7 +12,6 @@ class AudioManager {
         this.isInitialized = false;
         this.isMuted = false;
         
-        // URLs для звуков
         this.soundUrls = {
             backgroundMusic: 'sounds/www90.mp3',
             hitSound: 'sounds/hit.mp3',
@@ -27,30 +25,24 @@ class AudioManager {
         if (this.isInitialized) return;
         
         try {
-            // Создаем AudioContext с учетом префикса webkit для Safari
             const AudioContextClass = window.AudioContext || window.webkitAudioContext;
             this.audioContext = new AudioContextClass();
             
-            // Создаем мастер-гейн для общей громкости
             this.masterGain = this.audioContext.createGain();
             this.masterGain.connect(this.audioContext.destination);
             
-            // Отдельные гейны для музыки и SFX
             this.musicGain = this.audioContext.createGain();
             this.sfxGain = this.audioContext.createGain();
             
             this.musicGain.connect(this.masterGain);
             this.sfxGain.connect(this.masterGain);
             
-            // Устанавливаем начальные громкости
             this.musicGain.gain.value = 0.3;
             this.sfxGain.gain.value = 1.0;
             
-            // Предзагружаем все звуки
             await this.preloadSounds();
             
             this.isInitialized = true;
-            console.log('AudioManager initialized successfully');
         } catch (error) {
             console.error('Failed to initialize AudioManager:', error);
         }
@@ -60,7 +52,6 @@ class AudioManager {
         if (this.audioContext && this.audioContext.state === 'suspended') {
             try {
                 await this.audioContext.resume();
-                console.log('AudioContext resumed');
             } catch (error) {
                 console.error('Failed to resume AudioContext:', error);
             }
@@ -75,10 +66,8 @@ class AudioManager {
                 const arrayBuffer = await response.arrayBuffer();
                 const audioBuffer = await this.audioContext.decodeAudioData(arrayBuffer);
                 this.buffers[name] = audioBuffer;
-                console.log(`Loaded sound: ${name}`);
             } catch (error) {
                 console.warn(`Failed to load sound ${name}:`, error);
-                // Создаем пустой буфер как fallback
                 this.buffers[name] = this.createSilentBuffer(0.1);
             }
         });
@@ -96,7 +85,6 @@ class AudioManager {
     playMusic(soundName, loop = true) {
         if (!this.isInitialized || !this.buffers[soundName]) return;
         
-        // Останавливаем текущую музыку
         this.stopMusic();
         
         const source = this.audioContext.createBufferSource();
@@ -107,7 +95,6 @@ class AudioManager {
         source.start(0);
         this.activeSources.music = source;
         
-        // Удаляем из активных источников по завершении (если не зациклено)
         if (!loop) {
             source.onended = () => {
                 if (this.activeSources.music === source) {
@@ -121,9 +108,7 @@ class AudioManager {
         if (this.activeSources.music) {
             try {
                 this.activeSources.music.stop();
-            } catch (e) {
-                // Игнорируем ошибки если источник уже остановлен
-            }
+            } catch (e) {}
             this.activeSources.music = null;
         }
     }
@@ -131,7 +116,6 @@ class AudioManager {
     playSound(soundName) {
         if (!this.isInitialized || !this.buffers[soundName]) return;
         
-        // Убедимся что контекст активен
         this.resumeContext();
         
         const source = this.audioContext.createBufferSource();
@@ -141,7 +125,6 @@ class AudioManager {
         source.start(0);
         this.activeSources.sfx.push(source);
         
-        // Удаляем из списка активных по завершении
         source.onended = () => {
             const index = this.activeSources.sfx.indexOf(source);
             if (index > -1) {
@@ -187,37 +170,13 @@ class AudioManager {
             this.audioContext.resume();
         }
     }
-
-    // Генерация звуковых эффектов синтезом (fallback если файлы не загрузились)
-    generateBeep(frequency = 440, duration = 0.1, type = 'sine') {
-        if (!this.isInitialized) return;
-        
-        const oscillator = this.audioContext.createOscillator();
-        const gainNode = this.audioContext.createGain();
-        
-        oscillator.type = type;
-        oscillator.frequency.setValueAtTime(frequency, this.audioContext.currentTime);
-        
-        gainNode.gain.setValueAtTime(0.3, this.audioContext.currentTime);
-        gainNode.gain.exponentialRampToValueAtTime(0.01, this.audioContext.currentTime + duration);
-        
-        oscillator.connect(gainNode);
-        gainNode.connect(this.sfxGain);
-        
-        oscillator.start();
-        oscillator.stop(this.audioContext.currentTime + duration);
-    }
 }
 
 class ZombieGame {
     constructor() {
-        console.log('ZombieGame constructor called');
-        
-        // Инициализируем аудио менеджер
         this.audioManager = new AudioManager();
         this.userInteracted = false;
         
-        // Сначала сохраняем ссылки на основные элементы
         this.elements = {
             gameArea: document.getElementById('gameArea'),
             player: document.getElementById('player'),
@@ -241,7 +200,6 @@ class ZombieGame {
             { type: 'shield', emoji: '🛡️', chance: 0.1, duration: 5000, effect: 'invincibility' }
         ];
         
-        // Отложим инициализацию остальных элементов
         this.delayedInit();
     }
 
@@ -254,9 +212,6 @@ class ZombieGame {
     }
 
     async finishInit() {
-        console.log('Finishing initialization...');
-        
-        // Ищем остальные элементы
         this.elements = {
             ...this.elements,
             pauseScreen: document.getElementById('pauseScreen'),
@@ -278,7 +233,7 @@ class ZombieGame {
             soundVolumeValue: document.getElementById('soundVolumeValue'),
             skins: document.querySelectorAll('.skin'),
             colors: document.querySelectorAll('.color-option'),
-            backgroundOptions: document.querySelectorAll('.background-option'),
+            bgColorOptions: document.querySelectorAll('.bg-color-option'),
             pauseButton: document.getElementById('pauseButton'),
             mainMenu: document.getElementById('mainMenu'),
             menuHighScore: document.getElementById('menuHighScore'),
@@ -298,27 +253,24 @@ class ZombieGame {
             enableSound: document.getElementById('enableSound')
         };
 
-        console.log('Elements found:', this.elements);
-
-        // Найдите массив ranks в конструкторе и замените его на этот:
-this.ranks = [
-    { name: "Серебро I", xpRequired: 0, image: "images/ranks/iron_I.png" },
-    { name: "Серебро II", xpRequired: 100, image: "images/ranks/iron_II.png" },
-    { name: "Серебро III", xpRequired: 300, image: "images/ranks/iron_III.png" },
-    { name: "Золото I", xpRequired: 600, image: "images/ranks/gold_I.png" },
-    { name: "Золото II", xpRequired: 1000, image: "images/ranks/gold_II.png" },
-    { name: "Золото III", xpRequired: 1500, image: "images/ranks/gold_III.png" },
-    { name: "Изумруд I", xpRequired: 2600, image: "images/ranks/emerald_I.png" },
-    { name: "Изумруд II", xpRequired: 3800, image: "images/ranks/emerald_II.png" },
-    { name: "Изумруд III", xpRequired: 5100, image: "images/ranks/emerald_III.png" },
-    { name: "Сапфир I", xpRequired: 6500, image: "images/ranks/sapphire_I.png" },
-    { name: "Сапфир II", xpRequired: 8000, image: "images/ranks/sapphire_II.png" },
-    { name: "Сапфир III", xpRequired: 9600, image: "images/ranks/sapphire_III.png" },
-    { name: "Рубин I", xpRequired: 11300, image: "images/ranks/ruby_I.png" },
-    { name: "Рубин II", xpRequired: 13100, image: "images/ranks/ruby_II.png" },
-    { name: "Рубин III", xpRequired: 15000, image: "images/ranks/ruby_III.png" },
-    { name: "Легенда", xpRequired: 20000, image: "images/ranks/legend.png", isMax: true }
-];
+        this.ranks = [
+            { name: "Серебро I", xpRequired: 0, image: "images/ranks/iron_I.png" },
+            { name: "Серебро II", xpRequired: 100, image: "images/ranks/iron_II.png" },
+            { name: "Серебро III", xpRequired: 300, image: "images/ranks/iron_III.png" },
+            { name: "Золото I", xpRequired: 600, image: "images/ranks/gold_I.png" },
+            { name: "Золото II", xpRequired: 1000, image: "images/ranks/gold_II.png" },
+            { name: "Золото III", xpRequired: 1500, image: "images/ranks/gold_III.png" },
+            { name: "Изумруд I", xpRequired: 2600, image: "images/ranks/emerald_I.png" },
+            { name: "Изумруд II", xpRequired: 3800, image: "images/ranks/emerald_II.png" },
+            { name: "Изумруд III", xpRequired: 5100, image: "images/ranks/emerald_III.png" },
+            { name: "Сапфир I", xpRequired: 6500, image: "images/ranks/sapphire_I.png" },
+            { name: "Сапфир II", xpRequired: 8000, image: "images/ranks/sapphire_II.png" },
+            { name: "Сапфир III", xpRequired: 9600, image: "images/ranks/sapphire_III.png" },
+            { name: "Рубин I", xpRequired: 11300, image: "images/ranks/ruby_I.png" },
+            { name: "Рубин II", xpRequired: 13100, image: "images/ranks/ruby_II.png" },
+            { name: "Рубин III", xpRequired: 15000, image: "images/ranks/ruby_III.png" },
+            { name: "Легенда", xpRequired: 20000, image: "images/ranks/legend.png", isMax: true }
+        ];
 
         this.state = {
             lives: 3,
@@ -341,12 +293,12 @@ this.ranks = [
             minSpawnRate: 200,
             purchasedSkins: JSON.parse(localStorage.getItem('purchasedSkins')) || ["🤪"],
             purchasedColors: JSON.parse(localStorage.getItem('purchasedColors')) || ["#e74c3c"],
-            purchasedBackgrounds: JSON.parse(localStorage.getItem('purchasedBackgrounds')) || ["default"],
+            purchasedBgColors: JSON.parse(localStorage.getItem('purchasedBgColors')) || ["#0c3d6d"],
             currentMusicVolume: parseFloat(localStorage.getItem('musicVolume')) || 0.3,
             currentSoundVolume: parseFloat(localStorage.getItem('soundVolume')) || 1,
             currentColor: localStorage.getItem('selectedColor') || "#e74c3c",
             selectedSkin: localStorage.getItem('selectedSkin') || "🤪",
-            selectedBackground: localStorage.getItem('selectedBackground') || "default",
+            selectedBgColor: localStorage.getItem('selectedBgColor') || "#0c3d6d",
             bonuses: [],
             activeEffects: {
                 multiplier: { active: false, value: 1, timeout: null },
@@ -363,35 +315,26 @@ this.ranks = [
         this.updateMenuScores();
         this.updateRank();
         document.addEventListener('visibilitychange', () => this.handleVisibilityChange());
-        
-        // НЕ инициализируем аудио сразу - ждем взаимодействия пользователя
-        console.log('Game initialized, waiting for user interaction to start audio...');
     }
 
     async enableSound() {
         if (!this.userInteracted) {
             this.userInteracted = true;
             
-            // Инициализируем аудио менеджер
             await this.audioManager.init();
             await this.audioManager.resumeContext();
             
-            // Обновляем громкость из настроек
             this.audioManager.setMusicVolume(this.state.currentMusicVolume);
             this.audioManager.setSfxVolume(this.state.currentSoundVolume);
             
-            // Запускаем музыку если мы в меню
             if (this.elements.mainMenu.classList.contains('show')) {
                 this.tryPlayMusic();
             }
             
-            // Обновляем кнопку
             if (this.elements.enableSound) {
                 this.elements.enableSound.textContent = '🔊 Звук включен';
                 this.elements.enableSound.disabled = true;
             }
-            
-            console.log('Sound enabled by user interaction');
         }
     }
 
@@ -408,8 +351,7 @@ this.ranks = [
         this.elements.player.style.filter = `drop-shadow(0 0 5px ${this.hexToRGBA(this.state.currentColor, 0.7)})`;
         
         const gameContainer = document.querySelector('.game-container');
-        gameContainer.className = 'game-container';
-        gameContainer.classList.add(`${this.state.selectedBackground}-bg`);
+        gameContainer.style.backgroundColor = this.state.selectedBgColor;
         
         this.elements.musicVolume.value = this.state.currentMusicVolume;
         this.elements.soundVolume.value = this.state.currentSoundVolume;
@@ -422,7 +364,6 @@ this.ranks = [
             if (e.key === 'Escape') this.togglePause();
         });
 
-        // Обработчики для кнопок
         if (this.elements.resumeButton) {
             this.elements.resumeButton.addEventListener('click', () => this.togglePause());
         }
@@ -487,49 +428,6 @@ this.ranks = [
             this.elements.pauseToMenuBtn.addEventListener('click', () => this.showMainMenu());
         }
         
-        // Touch events
-        if (this.elements.startGameBtn) {
-            this.elements.startGameBtn.addEventListener('touchstart', (e) => {
-                e.preventDefault();
-                this.startFromMenu();
-            });
-        }
-        
-        if (this.elements.menuShopBtn) {
-            this.elements.menuShopBtn.addEventListener('touchstart', (e) => {
-                e.preventDefault();
-                this.openShop();
-            });
-        }
-        
-        if (this.elements.menuSettingsBtn) {
-            this.elements.menuSettingsBtn.addEventListener('touchstart', (e) => {
-                e.preventDefault();
-                this.openSettings();
-            });
-        }
-        
-        if (this.elements.menuRanksBtn) {
-            this.elements.menuRanksBtn.addEventListener('touchstart', (e) => {
-                e.preventDefault();
-                this.showRanks();
-            });
-        }
-        
-        if (this.elements.backToMenuBtn) {
-            this.elements.backToMenuBtn.addEventListener('touchstart', (e) => {
-                e.preventDefault();
-                this.showMainMenu();
-            });
-        }
-        
-        if (this.elements.pauseToMenuBtn) {
-            this.elements.pauseToMenuBtn.addEventListener('touchstart', (e) => {
-                e.preventDefault();
-                this.showMainMenu();
-            });
-        }
-        
         if (this.elements.skins) {
             this.elements.skins.forEach(skin => {
                 skin.addEventListener('click', () => this.handleSkinClick(skin));
@@ -542,9 +440,9 @@ this.ranks = [
             });
         }
         
-        if (this.elements.backgroundOptions) {
-            this.elements.backgroundOptions.forEach(background => {
-                background.addEventListener('click', () => this.handleBackgroundClick(background));
+        if (this.elements.bgColorOptions) {
+            this.elements.bgColorOptions.forEach(bgColor => {
+                bgColor.addEventListener('click', () => this.handleBgColorClick(bgColor));
             });
         }
         
@@ -562,7 +460,6 @@ this.ranks = [
     }
 
     async startFromMenu() {
-        // Активируем звук при первом взаимодействии
         if (!this.userInteracted) {
             await this.enableSound();
         }
@@ -790,7 +687,6 @@ this.ranks = [
         this.state.zombies.forEach(zombie => zombie.remove());
         this.state.zombies = [];
         
-        // ОЧИЩАЕМ ВСЕ БОНУСЫ при остановке игры
         this.clearAllBonuses();
         
         this.state.gameOver = false;
@@ -808,23 +704,18 @@ this.ranks = [
         }
     }
 
-    // НОВЫЙ МЕТОД: полная очистка всех бонусов
     clearAllBonuses() {
-        // Останавливаем все интервалы бонусов
         this.state.intervals.bonusMove.forEach(interval => clearInterval(interval));
         this.state.intervals.bonusMove = [];
         
-        // Удаляем все DOM-элементы бонусов
         this.state.bonuses.forEach(bonus => {
             if (bonus && bonus.parentNode) {
                 bonus.remove();
             }
         });
         
-        // Очищаем массив бонусов
         this.state.bonuses = [];
         
-        // Сбрасываем эффекты
         if (this.state.activeEffects.multiplier.timeout) {
             clearTimeout(this.state.activeEffects.multiplier.timeout);
         }
@@ -837,10 +728,7 @@ this.ranks = [
             invincibility: { active: false, timeout: null }
         };
         
-        // Убираем визуальные эффекты с игрока
         this.elements.player.classList.remove('shielded');
-        
-        console.log('All bonuses cleared');
     }
 
     showRanksModal() {
@@ -849,36 +737,36 @@ this.ranks = [
     }
 
     updateRanksModal() {
-    this.elements.ranksList.innerHTML = '';
-    
-    this.ranks.forEach((rank, index) => {
-        const rankItem = document.createElement('div');
-        rankItem.className = 'rank-item';
+        this.elements.ranksList.innerHTML = '';
         
-        const isMax = rank.isMax || index === this.ranks.length - 1;
-        if (isMax) {
-            rankItem.classList.add('legend-rank');
-        }
+        this.ranks.forEach((rank, index) => {
+            const rankItem = document.createElement('div');
+            rankItem.className = 'rank-item';
+            
+            const isMax = rank.isMax || index === this.ranks.length - 1;
+            if (isMax) {
+                rankItem.classList.add('legend-rank');
+            }
+            
+            if (index === this.state.currentRank) {
+                rankItem.classList.add('current');
+            }
+            
+            const xpText = isMax ? '★ МАКСИМУМ ★' : `${rank.xpRequired} XP`;
+            
+            rankItem.innerHTML = `
+                <img src="${rank.image}" alt="${rank.name}" class="rank-icon">
+                <div class="rank-info">
+                    <div class="rank-name">${rank.name}</div>
+                    <div class="rank-xp ${isMax ? 'max' : ''}">${xpText}</div>
+                </div>
+            `;
+            
+            this.elements.ranksList.appendChild(rankItem);
+        });
         
-        if (index === this.state.currentRank) {
-            rankItem.classList.add('current');
-        }
-        
-        const xpText = isMax ? '★ МАКС ★' : `${rank.xpRequired} XP`;
-        
-        rankItem.innerHTML = `
-            <img src="${rank.image}" alt="${rank.name}" class="rank-icon">
-            <div class="rank-info">
-                <div class="rank-name">${rank.name}</div>
-                <div class="rank-xp ${isMax ? 'max' : ''}">${xpText}</div>
-            </div>
-        `;
-        
-        this.elements.ranksList.appendChild(rankItem);
-    });
-    
-    this.updateCurrentRankInfo();
-}
+        this.updateCurrentRankInfo();
+    }
 
     startGame() {
         this.resetGameState();
@@ -901,7 +789,6 @@ this.ranks = [
         this.state.zombies = [];
         this.state.intervals.zombieMove = [];
         
-        // ОЧИЩАЕМ БОНУСЫ при сбросе состояния игры
         this.state.bonuses = [];
         this.state.intervals.bonusMove = [];
         
@@ -920,25 +807,16 @@ this.ranks = [
         
         this.state.zombieSpawnRate = 500;
         
-        // Удаляем всех зомби
         document.querySelectorAll('.zombie').forEach(zombie => zombie.remove());
-        
-        // Удаляем все бонусы
         document.querySelectorAll('.bonus').forEach(bonus => bonus.remove());
-        
-        // Удаляем все уведомления и эффекты
         document.querySelectorAll('.bonus-notification').forEach(el => el.remove());
         
-        // Сбрасываем игрока
         this.elements.player.style.visibility = 'visible';
         this.elements.player.classList.remove('shielded', 'invincible');
         
         this.updateRank();
         
-        document.querySelector('.game-container').className = 'game-container';
-        document.querySelector('.game-container').classList.add(`${this.state.selectedBackground}-bg`);
-        
-        console.log('Game state reset, all bonuses cleared');
+        document.querySelector('.game-container').style.backgroundColor = this.state.selectedBgColor;
     }
 
     movePlayer(event) {
@@ -946,9 +824,16 @@ this.ranks = [
         
         const gameAreaRect = this.elements.gameArea.getBoundingClientRect();
         const playerWidth = this.elements.player.offsetWidth;
-        let newLeft = event.clientX - gameAreaRect.left;
         
-        newLeft = Math.max(0, Math.min(newLeft, this.elements.gameArea.clientWidth - playerWidth));
+        // Вычисляем позицию относительно gameArea с учетом центра игрока
+        let newLeft = event.clientX - gameAreaRect.left - (playerWidth / 2);
+        
+        // Ограничиваем движение строго внутри gameArea
+        const minLeft = 5; // Отступ от левого края
+        const maxLeft = this.elements.gameArea.clientWidth - playerWidth - 5; // Отступ от правого края
+        
+        newLeft = Math.max(minLeft, Math.min(newLeft, maxLeft));
+        
         this.elements.player.style.left = `${newLeft}px`;
     }
 
@@ -1074,61 +959,58 @@ this.ranks = [
         this.playSound('coinSound');
     }
 
-   updateRank() {
-    let rankIncreased = false;
-    const previousRank = this.state.currentRank;
-    const wasMaxRank = this.state.currentRank >= this.ranks.length - 1;
-    
-    // Проверяем повышение ранга
-    while (this.state.currentRank < this.ranks.length - 1 && 
-           this.state.currentXp >= this.ranks[this.state.currentRank + 1].xpRequired) {
-        this.state.currentRank++;
-        rankIncreased = true;
-        localStorage.setItem('currentRank', this.state.currentRank);
-    }
-    
-    // Если уже Легенда, просто сохраняем XP (бесконечный прогресс)
-    if (wasMaxRank || this.state.currentRank >= this.ranks.length - 1) {
-        localStorage.setItem('currentXp', this.state.currentXp);
-    }
-    
-    const currentRank = this.ranks[Math.min(this.state.currentRank, this.ranks.length - 1)];
-    const isMaxRank = this.state.currentRank >= this.ranks.length - 1;
-    
-    // Обновляем отображение
-    this.elements.rankImage.innerHTML = `<img src="${currentRank.image}" alt="${currentRank.name}" class="rank-icon">`;
-    this.elements.rankName.textContent = currentRank.name;
-    
-    if (isMaxRank) {
-        this.elements.rankProgress.style.display = 'none';
-        this.elements.rankProgressText.textContent = '★ МАКС ★';
-        this.elements.rankProgressText.style.fontWeight = 'bold';
-        this.elements.rankProgressText.style.color = '#f1c40f';
-        this.elements.rankProgressText.style.fontSize = '14px';
-        this.elements.rankProgressText.style.textShadow = '0 0 10px rgba(241, 196, 15, 0.8)';
-    } else {
-        this.elements.rankProgress.style.display = 'block';
-        const nextRank = this.ranks[this.state.currentRank + 1];
-        const xpForNextRank = nextRank.xpRequired - currentRank.xpRequired;
-        const xpInCurrentRank = this.state.currentXp - currentRank.xpRequired;
-        const progress = Math.min(100, (xpInCurrentRank / xpForNextRank) * 100);
+    updateRank() {
+        let rankIncreased = false;
+        const previousRank = this.state.currentRank;
+        const wasMaxRank = this.state.currentRank >= this.ranks.length - 1;
         
-        this.elements.rankProgress.value = progress;
-        this.elements.rankProgressText.textContent = `${xpInCurrentRank}/${xpForNextRank} XP`;
-        this.elements.rankProgressText.style.fontWeight = 'normal';
-        this.elements.rankProgressText.style.color = '#ecf0f1';
-        this.elements.rankProgressText.style.fontSize = '12px';
-        this.elements.rankProgressText.style.textShadow = 'none';
+        while (this.state.currentRank < this.ranks.length - 1 && 
+               this.state.currentXp >= this.ranks[this.state.currentRank + 1].xpRequired) {
+            this.state.currentRank++;
+            rankIncreased = true;
+            localStorage.setItem('currentRank', this.state.currentRank);
+        }
+        
+        if (wasMaxRank || this.state.currentRank >= this.ranks.length - 1) {
+            localStorage.setItem('currentXp', this.state.currentXp);
+        }
+        
+        const currentRank = this.ranks[Math.min(this.state.currentRank, this.ranks.length - 1)];
+        const isMaxRank = this.state.currentRank >= this.ranks.length - 1;
+        
+        this.elements.rankImage.innerHTML = `<img src="${currentRank.image}" alt="${currentRank.name}" class="rank-icon">`;
+        this.elements.rankName.textContent = currentRank.name;
+        
+        if (isMaxRank) {
+            this.elements.rankProgress.style.display = 'none';
+            this.elements.rankProgressText.textContent = '★ МАКСИМУМ ★';
+            this.elements.rankProgressText.style.fontWeight = 'bold';
+            this.elements.rankProgressText.style.color = '#f1c40f';
+            this.elements.rankProgressText.style.fontSize = '14px';
+            this.elements.rankProgressText.style.textShadow = '0 0 10px rgba(241, 196, 15, 0.8)';
+        } else {
+            this.elements.rankProgress.style.display = 'block';
+            const nextRank = this.ranks[this.state.currentRank + 1];
+            const xpForNextRank = nextRank.xpRequired - currentRank.xpRequired;
+            const xpInCurrentRank = this.state.currentXp - currentRank.xpRequired;
+            const progress = Math.min(100, (xpInCurrentRank / xpForNextRank) * 100);
+            
+            this.elements.rankProgress.value = progress;
+            this.elements.rankProgressText.textContent = `${xpInCurrentRank}/${xpForNextRank} XP`;
+            this.elements.rankProgressText.style.fontWeight = 'normal';
+            this.elements.rankProgressText.style.color = '#ecf0f1';
+            this.elements.rankProgressText.style.fontSize = '12px';
+            this.elements.rankProgressText.style.textShadow = 'none';
+        }
+        
+        if (this.elements.ranksModal.classList.contains('show')) {
+            this.updateRanksModal();
+        }
+        
+        if (rankIncreased && previousRank !== this.state.currentRank) {
+            this.showRankUpNotification(currentRank);
+        }
     }
-    
-    if (this.elements.ranksModal.classList.contains('show')) {
-        this.updateRanksModal();
-    }
-    
-    if (rankIncreased && previousRank !== this.state.currentRank) {
-        this.showRankUpNotification(currentRank);
-    }
-}
 
     showRankUpNotification(rank) {
         this.playSound('rankUpSound');
@@ -1305,6 +1187,7 @@ this.ranks = [
     updateShop() {
         this.elements.shopScore.textContent = this.state.totalScore;
         
+        // Скины
         this.elements.skins.forEach(skin => {
             const skinType = skin.dataset.skin;
             const price = parseInt(skin.dataset.price);
@@ -1317,6 +1200,7 @@ this.ranks = [
                 : `${skinType} (${price} очков)`;
         });
         
+        // Цвета игрока
         this.elements.colors.forEach(color => {
             const colorHex = color.dataset.color;
             const price = parseInt(color.dataset.price);
@@ -1330,17 +1214,18 @@ this.ranks = [
                 : `${baseText} (${price} очков)`;
         });
         
-        this.elements.backgroundOptions.forEach(background => {
-            const bgType = background.dataset.background;
-            const price = parseInt(background.dataset.price);
+        // Цвета фона
+        this.elements.bgColorOptions.forEach(bgColor => {
+            const bgColorValue = bgColor.dataset.bgcolor;
+            const price = parseInt(bgColor.dataset.price);
             
-            background.classList.toggle('owned', this.state.purchasedBackgrounds.includes(bgType));
-            background.classList.toggle('selected', bgType === this.state.selectedBackground);
+            bgColor.classList.toggle('owned', this.state.purchasedBgColors.includes(bgColorValue));
+            bgColor.classList.toggle('selected', bgColorValue === this.state.selectedBgColor);
             
-            const baseText = background.textContent.split(' (')[0];
-            background.textContent = this.state.purchasedBackgrounds.includes(bgType) 
+            const baseText = bgColor.textContent.split(' (')[0];
+            bgColor.textContent = this.state.purchasedBgColors.includes(bgColorValue) 
                 ? `${baseText} (Куплен)` 
-                : `${baseText} (${price} очков)`;
+                : `${baseText} (${price})`;
         });
     }
 
@@ -1359,6 +1244,25 @@ this.ranks = [
         this.elements.player.textContent = skin;
         localStorage.setItem('selectedSkin', skin);
         this.animateElement(this.elements.player, 'animate__bounce');
+    }
+
+    buySkin(skinElement) {
+        const price = parseInt(skinElement.dataset.price);
+        const skin = skinElement.dataset.skin;
+        
+        if (price <= this.state.totalScore) {
+            this.state.totalScore -= price;
+            localStorage.setItem('totalScore', this.state.totalScore);
+            
+            if (!this.state.purchasedSkins.includes(skin)) {
+                this.state.purchasedSkins.push(skin);
+                localStorage.setItem('purchasedSkins', JSON.stringify(this.state.purchasedSkins));
+            }
+            
+            this.equipSkin(skin);
+            this.playSound('coinSound');
+            this.updateShop();
+        }
     }
 
     handleColorClick(colorElement) {
@@ -1398,64 +1302,44 @@ this.ranks = [
         this.animateElement(this.elements.player, 'animate__pulse');
     }
 
-    handleBackgroundClick(backgroundElement) {
-        const background = backgroundElement.dataset.background;
-        if (this.state.purchasedBackgrounds.includes(background)) {
-            this.equipBackground(background);
+    handleBgColorClick(bgColorElement) {
+        const bgColor = bgColorElement.dataset.bgcolor;
+        if (this.state.purchasedBgColors.includes(bgColor)) {
+            this.equipBgColor(bgColor);
         } else {
-            this.buyBackground(backgroundElement);
+            this.buyBgColor(bgColorElement);
         }
-        this.updateShop();
     }
 
-    buyBackground(backgroundElement) {
-        const price = parseInt(backgroundElement.dataset.price);
-        const background = backgroundElement.dataset.background;
+    buyBgColor(bgColorElement) {
+        const price = parseInt(bgColorElement.dataset.price);
+        const bgColor = bgColorElement.dataset.bgcolor;
         
         if (price <= this.state.totalScore) {
             this.state.totalScore -= price;
             localStorage.setItem('totalScore', this.state.totalScore);
             
-            if (!this.state.purchasedBackgrounds.includes(background)) {
-                this.state.purchasedBackgrounds.push(background);
-                localStorage.setItem('purchasedBackgrounds', JSON.stringify(this.state.purchasedBackgrounds));
+            if (!this.state.purchasedBgColors.includes(bgColor)) {
+                this.state.purchasedBgColors.push(bgColor);
+                localStorage.setItem('purchasedBgColors', JSON.stringify(this.state.purchasedBgColors));
             }
             
-            this.equipBackground(background);
-            this.playSound('coinSound');
-        }
-    }
-
-    buySkin(skinElement) {
-        const price = parseInt(skinElement.dataset.price);
-        const skin = skinElement.dataset.skin;
-        
-        if (price <= this.state.totalScore) {
-            this.state.totalScore -= price;
-            localStorage.setItem('totalScore', this.state.totalScore);
-            
-            if (!this.state.purchasedSkins.includes(skin)) {
-                this.state.purchasedSkins.push(skin);
-                localStorage.setItem('purchasedSkins', JSON.stringify(this.state.purchasedSkins));
-            }
-            
-            this.equipSkin(skin);
+            this.equipBgColor(bgColor);
             this.playSound('coinSound');
             this.updateShop();
         }
     }
 
-    equipBackground(background) {
-        this.state.selectedBackground = background;
-        localStorage.setItem('selectedBackground', background);
+    equipBgColor(bgColor) {
+        this.state.selectedBgColor = bgColor;
+        localStorage.setItem('selectedBgColor', bgColor);
         
         const gameContainer = document.querySelector('.game-container');
-        gameContainer.className = 'game-container';
-        gameContainer.classList.add(`${background}-bg`);
+        gameContainer.style.backgroundColor = bgColor;
         
-        this.animateElement(gameContainer, 'animate__pulse');
+        this.updateShop();
     }
-    
+
     openSettings() {
         this.elements.settingsModal.style.zIndex = "1002";
         this.showModal(this.elements.settingsModal);
@@ -1494,29 +1378,29 @@ this.ranks = [
     }
 
     updateCurrentRankInfo() {
-    const currentRank = this.ranks[this.state.currentRank];
-    const isMaxRank = currentRank.isMax || this.state.currentRank === this.ranks.length - 1;
-    
-    this.elements.currentRankName.textContent = currentRank.name;
-    
-    if (isMaxRank) {
-        this.elements.currentRankProgress.style.display = 'none';
-        this.elements.currentRankXP.textContent = 'МАКС РАНГ ДОСТИГНУТ!';
-        this.elements.currentRankXP.style.color = '#f1c40f';
-        this.elements.currentRankXP.style.fontWeight = 'bold';
-    } else {
-        this.elements.currentRankProgress.style.display = 'block';
-        const nextRank = this.ranks[this.state.currentRank + 1];
-        const xpForNextRank = nextRank.xpRequired - currentRank.xpRequired;
-        const xpInCurrentRank = this.state.currentXp - currentRank.xpRequired;
-        const progress = (xpInCurrentRank / xpForNextRank) * 100;
+        const currentRank = this.ranks[this.state.currentRank];
+        const isMaxRank = currentRank.isMax || this.state.currentRank === this.ranks.length - 1;
         
-        this.elements.currentRankProgress.value = progress;
-        this.elements.currentRankXP.textContent = `${xpInCurrentRank}/${xpForNextRank} XP (Всего: ${this.state.currentXp} XP)`;
-        this.elements.currentRankXP.style.color = '#bdc3c7';
-        this.elements.currentRankXP.style.fontWeight = 'normal';
+        this.elements.currentRankName.textContent = currentRank.name;
+        
+        if (isMaxRank) {
+            this.elements.currentRankProgress.style.display = 'none';
+            this.elements.currentRankXP.textContent = 'МАКСИМАЛЬНЫЙ РАНГ ДОСТИГНУТ!';
+            this.elements.currentRankXP.style.color = '#f1c40f';
+            this.elements.currentRankXP.style.fontWeight = 'bold';
+        } else {
+            this.elements.currentRankProgress.style.display = 'block';
+            const nextRank = this.ranks[this.state.currentRank + 1];
+            const xpForNextRank = nextRank.xpRequired - currentRank.xpRequired;
+            const xpInCurrentRank = this.state.currentXp - currentRank.xpRequired;
+            const progress = (xpInCurrentRank / xpForNextRank) * 100;
+            
+            this.elements.currentRankProgress.value = progress;
+            this.elements.currentRankXP.textContent = `${xpInCurrentRank}/${xpForNextRank} XP (Всего: ${this.state.currentXp} XP)`;
+            this.elements.currentRankXP.style.color = '#bdc3c7';
+            this.elements.currentRankXP.style.fontWeight = 'normal';
+        }
     }
-}
 
     closeRanks() {
         this.hideModal(this.elements.ranksModal);
@@ -1564,18 +1448,15 @@ this.ranks = [
     }
 }
 
-// Дополнительная защита от контекстного меню
 document.addEventListener('contextmenu', function(e) {
     e.preventDefault();
     return false;
 });
 
-// Предотвращение масштабирования на мобильных
 document.addEventListener('gesturestart', function(e) {
     e.preventDefault();
 });
 
-// Предотвращение выделения текста
 document.addEventListener('selectstart', function(e) {
     e.preventDefault();
 });
